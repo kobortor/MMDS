@@ -3,7 +3,8 @@
 using namespace std;
 
 // Just a prototype to satisfy the intellisense
-vector<int> minhash(const set<int> &s, const vector<function<int(int)>> &hash_functions);
+vector<int> minhash(const set<int> &data, const vector<function<int(int)>> &hash_functions);
+vector<vector<int>> minhash_many(const vector<set<int>> &data, const vector<function<int(int)>> &hash_functions);
 
 int hash_range(vector<int>::const_iterator &begin, vector<int>::const_iterator &end) {
     int ans = 0;
@@ -75,4 +76,36 @@ vector<pair<int, int>> approx_matches_from_minhashes_list(const vector<vector<in
     return pairs;
 }
 
-vector<pair<int, int>> approx_matches(const vector<set<int>> &data, int blocksize, int hashtable_size, )
+double self_power(double x) {
+    return pow(x, x);
+}
+
+// Solve for x in x^x = z
+double inverse_self_power(double z) {
+    double lo = 1 / M_E;
+
+    double hi = 100.0;
+    for (int i = 0; i < 50; i++) {
+        double mid = (lo + hi) / 2;
+        if (self_power(mid) < z) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+
+    return lo;
+}
+
+vector<pair<int, int>> approx_matches(
+    const vector<set<int>> &data, const vector<function<int(int)>> &hash_functions, double threshold = 0.8) {
+
+    if (data.empty()) {
+        return {};
+    }
+
+    int n = data[0].size();
+    int blocksize = min(5, int(self_power(pow(1/threshold, n))) + 1);
+
+    return approx_matches_from_minhashes_list(minhash_many(data, hash_functions), blocksize, 5 * n);
+}
